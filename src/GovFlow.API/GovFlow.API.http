@@ -1,0 +1,51 @@
+@GovFlow.API_HostAddress = http://localhost:5204
+
+### Health
+GET {{GovFlow.API_HostAddress}}/health
+Accept: application/json
+
+### 1) Create organization
+# @name createOrg
+POST {{GovFlow.API_HostAddress}}/api/v1/organizations
+Content-Type: application/json
+
+{
+  "name": "City Hall",
+  "slug": "city-hall"
+}
+
+### 2) Create process type (with steps)
+# @name createProcessType
+POST {{GovFlow.API_HostAddress}}/api/v1/process-types
+Content-Type: application/json
+
+{
+  "name": "Vacation Request",
+  "description": "Employee vacation approval flow",
+  "organizationId": "{{createOrg.response.body.id}}",
+  "steps": [
+    { "name": "Submit request", "description": "Employee submits the request" },
+    { "name": "Manager approval", "description": "Manager approves the request" }
+  ]
+}
+
+### 3) Open a process instance
+# @name openProcess
+POST {{GovFlow.API_HostAddress}}/api/v1/processes
+Content-Type: application/json
+
+{
+  "processTypeId": "{{createProcessType.response.body.id}}",
+  "requesterId": "11111111-1111-1111-1111-111111111111",
+  "title": "Vacation - July",
+  "description": "Two weeks off",
+  "priority": "Normal"
+}
+
+### 4) Complete the current step
+POST {{GovFlow.API_HostAddress}}/api/v1/processes/{{openProcess.response.body.id}}/complete-step
+Content-Type: application/json
+
+{
+  "notes": "Submitted by employee"
+}
