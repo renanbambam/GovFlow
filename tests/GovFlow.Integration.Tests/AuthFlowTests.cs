@@ -13,7 +13,6 @@ public class AuthFlowTests : IClassFixture<GovFlowApiFactory>
     [Fact]
     public async Task Register_then_login_and_use_token()
     {
-        // An admin creates the organization the new user will belong to.
         var admin = _factory.CreateAuthenticatedClient("Admin");
         var orgResponse = await admin.PostAsJsonAsync("/api/v1/organizations",
             new { name = "Auth Org", slug = "auth-org" });
@@ -21,7 +20,6 @@ public class AuthFlowTests : IClassFixture<GovFlowApiFactory>
 
         var anon = _factory.CreateClient();
 
-        // Register
         var registerResponse = await anon.PostAsJsonAsync("/api/v1/auth/register", new
         {
             name = "Jane",
@@ -35,12 +33,10 @@ public class AuthFlowTests : IClassFixture<GovFlowApiFactory>
         Assert.False(string.IsNullOrEmpty(registered!.AccessToken));
         Assert.Contains("Manager", registered.Roles);
 
-        // Login
         var loginResponse = await anon.PostAsJsonAsync("/api/v1/auth/login",
             new { email = "jane@govflow.local", password = "Passw0rd!" });
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
 
-        // Wrong password
         var badLogin = await anon.PostAsJsonAsync("/api/v1/auth/login",
             new { email = "jane@govflow.local", password = "wrong" });
         Assert.Equal(HttpStatusCode.Unauthorized, badLogin.StatusCode);

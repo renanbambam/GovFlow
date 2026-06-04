@@ -4,10 +4,6 @@ using ValidationException = FluentValidation.ValidationException;
 
 namespace GovFlow.API.Middleware;
 
-/// <summary>
-/// Translates exceptions bubbling out of the MediatR pipeline / domain into RFC 7807
-/// Problem Details responses. Keeps controllers free of try/catch noise.
-/// </summary>
 public sealed class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;

@@ -2,10 +2,6 @@ using GovFlow.Domain.Common;
 
 namespace GovFlow.Domain.Process;
 
-/// <summary>
-/// One ordered stage in a <see cref="ProcessType"/> template. Part of the ProcessType
-/// aggregate, so it is only created and reordered through its parent.
-/// </summary>
 public sealed class WorkflowStep : Entity
 {
     private readonly List<string> _requiredDocuments = new();
@@ -18,10 +14,8 @@ public sealed class WorkflowStep : Entity
 
     public int Order { get; private set; }
 
-    /// <summary>Department this step is assigned to by default, if any.</summary>
     public Guid? AssignableDepartmentId { get; private set; }
 
-    /// <summary>Resolution target in hours, used later to derive an SLA policy.</summary>
     public int? SlaHours { get; private set; }
 
     public IReadOnlyList<string> RequiredDocuments => _requiredDocuments.AsReadOnly();

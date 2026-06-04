@@ -8,13 +8,13 @@ using GovFlow.Infrastructure.Identity;
 using GovFlow.Infrastructure.Persistence;
 using GovFlow.Infrastructure.Persistence.ReadRepositories;
 using GovFlow.Infrastructure.Persistence.Repositories;
+using GovFlow.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GovFlow.Infrastructure;
 
-/// <summary>Registers the Infrastructure layer: the EF Core context and repositories.</summary>
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
@@ -29,14 +29,21 @@ public static class DependencyInjection
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IProcessTypeRepository, ProcessTypeRepository>();
         services.AddScoped<IProcessInstanceRepository, ProcessInstanceRepository>();
+        services.AddScoped<IProcessCommentRepository, ProcessCommentRepository>();
+        services.AddScoped<IProcessDocumentRepository, ProcessDocumentRepository>();
 
-        // Read side (CQRS queries → DTOs)
         services.AddScoped<IOrganizationReadRepository, OrganizationReadRepository>();
         services.AddScoped<IProcessTypeReadRepository, ProcessTypeReadRepository>();
         services.AddScoped<IProcessReadRepository, ProcessReadRepository>();
+        services.AddScoped<IProcessCommentReadRepository, ProcessCommentReadRepository>();
+        services.AddScoped<IProcessDocumentReadRepository, ProcessDocumentReadRepository>();
         services.AddScoped<IDashboardReadRepository, DashboardReadRepository>();
 
-        // Identity / auth
+        var basePath = configuration.GetValue<string>("FileStorage:BasePath");
+        if (string.IsNullOrWhiteSpace(basePath))
+            basePath = Path.Combine(AppContext.BaseDirectory, "uploads");
+        services.AddSingleton<IFileStorageService>(new LocalFileStorageService(basePath));
+
         var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? new JwtSettings();
         services.AddSingleton(jwtSettings);
         services.AddScoped<IUserRepository, UserRepository>();

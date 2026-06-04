@@ -14,8 +14,12 @@ public static class SwaggerExtensions
             {
                 Title = "GovFlow API",
                 Version = "v1",
-                Description = "Enterprise process and workflow management platform. "
-                            + "Phase 1 endpoints: organizations, departments, process types and process instances."
+                Description = "Enterprise process and workflow management platform built with Clean Architecture, "
+                            + "DDD and CQRS. Features: JWT auth with refresh tokens and role-based policies "
+                            + "(Admin/Manager/Analyst), organizations & departments, configurable process types, "
+                            + "running process instances with a full state machine, a per-process timeline (audit "
+                            + "history), comments, PDF document attachments, real-time updates over SignalR "
+                            + "(hub at /hubs/processes) and SLA monitoring via a recurring Hangfire job."
             });
 
             var bearer = new OpenApiSecurityScheme

@@ -5,23 +5,29 @@ using GovFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GovFlow.Integration.Tests;
 
-/// <summary>
-/// Boots the real API pipeline (controllers, MediatR, validation, exception handling) but
-/// swaps the PostgreSQL context for an isolated in-memory database so the tests need no
-/// running infrastructure.
-/// </summary>
 public sealed class GovFlowApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _databaseName = $"govflow-tests-{Guid.NewGuid()}";
 
+    private readonly string _uploadsPath = Path.Combine(Path.GetTempPath(), $"govflow-tests-{Guid.NewGuid():N}");
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["FileStorage:BasePath"] = _uploadsPath
+            });
+        });
 
         builder.ConfigureServices(services =>
         {
@@ -34,8 +40,14 @@ public sealed class GovFlowApiFactory : WebApplicationFactory<Program>
         });
     }
 
-    /// <summary>Creates an HttpClient with a valid JWT carrying the given roles.</summary>
     public HttpClient CreateAuthenticatedClient(params string[] roles)
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateAccessToken(roles));
+        return client;
+    }
+
+    public string GenerateAccessToken(params string[] roles)
     {
         using var scope = Services.CreateScope();
         var tokenGenerator = scope.ServiceProvider.GetRequiredService<IJwtTokenGenerator>();
@@ -44,10 +56,13 @@ public sealed class GovFlowApiFactory : WebApplicationFactory<Program>
         foreach (var role in roles)
             user.AssignRole(role);
 
-        var tokens = tokenGenerator.GenerateTokens(user);
+        return tokenGenerator.GenerateTokens(user).AccessToken;
+    }
 
-        var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
-        return client;
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing && Directory.Exists(_uploadsPath))
+            Directory.Delete(_uploadsPath, recursive: true);
     }
 }

@@ -2,7 +2,6 @@ using GovFlow.Application.Common.Security;
 
 namespace GovFlow.Infrastructure.Identity;
 
-/// <summary>BCrypt-based password hashing.</summary>
 internal sealed class PasswordHasher : IPasswordHasher
 {
     public string Hash(string password) => BCrypt.Net.BCrypt.HashPassword(password);

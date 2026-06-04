@@ -7,10 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GovFlow.Infrastructure.Persistence;
 
-/// <summary>
-/// EF Core unit of work over PostgreSQL. Entity mappings live in the
-/// <c>Configurations</c> folder and are applied by convention.
-/// </summary>
 public sealed class GovFlowDbContext : DbContext, IUnitOfWork
 {
     public GovFlowDbContext(DbContextOptions<GovFlowDbContext> options) : base(options)
@@ -26,6 +22,9 @@ public sealed class GovFlowDbContext : DbContext, IUnitOfWork
     public DbSet<WorkflowStep> WorkflowSteps => Set<WorkflowStep>();
     public DbSet<ProcessInstance> ProcessInstances => Set<ProcessInstance>();
     public DbSet<ProcessInstanceStep> ProcessInstanceSteps => Set<ProcessInstanceStep>();
+    public DbSet<ProcessTimelineEntry> ProcessTimelineEntries => Set<ProcessTimelineEntry>();
+    public DbSet<ProcessComment> ProcessComments => Set<ProcessComment>();
+    public DbSet<ProcessDocument> ProcessDocuments => Set<ProcessDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

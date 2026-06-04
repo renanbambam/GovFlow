@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GovFlow.API.Controllers;
 
-/// <summary>Executive dashboard counters.</summary>
 [ApiController]
 [Route("api/v1/dashboard")]
 [Produces("application/json")]
@@ -17,7 +16,6 @@ public sealed class DashboardController : ControllerBase
 
     public DashboardController(ISender sender) => _sender = sender;
 
-    /// <summary>Returns totals for organizations, process types and processes.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(DashboardDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<DashboardDto>> Get(CancellationToken cancellationToken)

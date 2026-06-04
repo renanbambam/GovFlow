@@ -14,16 +14,13 @@ public class EndToEndFlowTests : IClassFixture<GovFlowApiFactory>
     [Fact]
     public async Task Create_organization_then_process_type_then_open_and_complete()
     {
-        // Admin can do everything in the chain (Admin satisfies Manager + Analyst policies).
         var client = _factory.CreateAuthenticatedClient("Admin");
 
-        // 1) Organization
         var orgResponse = await client.PostAsJsonAsync("/api/v1/organizations",
             new { name = "City Hall", slug = "city-hall" });
         Assert.Equal(HttpStatusCode.Created, orgResponse.StatusCode);
         var organization = await orgResponse.Content.ReadFromJsonAsync<CreatedDto>();
 
-        // 2) Process type with a single step
         var typeResponse = await client.PostAsJsonAsync("/api/v1/process-types", new
         {
             name = "Vacation Request",
@@ -34,7 +31,6 @@ public class EndToEndFlowTests : IClassFixture<GovFlowApiFactory>
         Assert.Equal(HttpStatusCode.Created, typeResponse.StatusCode);
         var processType = await typeResponse.Content.ReadFromJsonAsync<CreatedDto>();
 
-        // 3) Open a process instance
         var openResponse = await client.PostAsJsonAsync("/api/v1/processes", new
         {
             processTypeId = processType!.Id,
@@ -46,20 +42,17 @@ public class EndToEndFlowTests : IClassFixture<GovFlowApiFactory>
         Assert.Equal(HttpStatusCode.Created, openResponse.StatusCode);
         var instance = await openResponse.Content.ReadFromJsonAsync<CreatedDto>();
 
-        // 4) Complete the only step -> process resolves
         var completeResponse = await client.PostAsJsonAsync(
             $"/api/v1/processes/{instance!.Id}/complete-step",
             new { notes = "done" });
         Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
 
-        // 5) Read back via queries
         var detail = await client.GetFromJsonAsync<ProcessInstanceDto>($"/api/v1/processes/{instance.Id}");
         Assert.Equal("Resolved", detail!.Status);
 
         var list = await client.GetFromJsonAsync<List<ProcessSummaryDto>>("/api/v1/processes");
         Assert.Contains(list!, p => p.Id == instance.Id);
 
-        // 6) Dashboard reflects the data
         var dashboard = await client.GetFromJsonAsync<DashboardSnapshot>("/api/v1/dashboard");
         Assert.Equal(1, dashboard!.TotalOrganizations);
         Assert.Equal(1, dashboard.TotalCompletedProcesses);

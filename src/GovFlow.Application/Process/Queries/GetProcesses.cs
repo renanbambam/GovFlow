@@ -4,7 +4,6 @@ using MediatR;
 
 namespace GovFlow.Application.Process.Queries;
 
-/// <summary>Lists process instances (summary view), optionally filtered by organization.</summary>
 public sealed record GetProcessesQuery(Guid? OrganizationId = null) : IRequest<IReadOnlyList<ProcessSummaryDto>>;
 
 public sealed class GetProcessesQueryHandler : IRequestHandler<GetProcessesQuery, IReadOnlyList<ProcessSummaryDto>>

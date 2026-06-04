@@ -5,10 +5,6 @@ using OrganizationAggregate = GovFlow.Domain.Organization.Organization;
 
 namespace GovFlow.Infrastructure.Persistence;
 
-/// <summary>
-/// Applies migrations and seeds a minimal dataset for local development. Both steps are
-/// idempotent and only touch a relational provider.
-/// </summary>
 public static class GovFlowDbInitializer
 {
     public static async Task MigrateAsync(GovFlowDbContext context, CancellationToken cancellationToken = default)
@@ -30,7 +26,6 @@ public static class GovFlowDbInitializer
         processType.AddStep("Analyst review", "An analyst reviews and approves the request.");
         await context.ProcessTypes.AddAsync(processType, cancellationToken);
 
-        // Dev admin account: admin@govflow.local / Admin#12345
         var admin = User.Create(
             "Demo Admin",
             "admin@govflow.local",

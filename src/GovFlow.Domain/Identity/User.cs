@@ -2,10 +2,6 @@ using GovFlow.Domain.Common;
 
 namespace GovFlow.Domain.Identity;
 
-/// <summary>
-/// A person who can authenticate and act within an organization. The user aggregate owns
-/// its role assignments, which are referenced by id (roles live in their own aggregate).
-/// </summary>
 public sealed class User : AggregateRoot
 {
     private readonly List<Guid> _roleIds = new();
@@ -25,7 +21,6 @@ public sealed class User : AggregateRoot
 
     public IReadOnlyCollection<Guid> RoleIds => _roleIds.AsReadOnly();
 
-    /// <summary>Role names used for authentication/authorization (e.g. Admin, Manager, Analyst).</summary>
     public IReadOnlyCollection<string> Roles => _roles.ToArray();
 
     private User(string name, string email, string passwordHash, Guid organizationId, Guid? departmentId)

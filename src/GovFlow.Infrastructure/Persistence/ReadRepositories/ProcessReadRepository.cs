@@ -53,6 +53,31 @@ internal sealed class ProcessReadRepository : IProcessReadRepository
             .ToList();
     }
 
+    public async Task<IReadOnlyList<ProcessTimelineEntryDto>?> GetTimelineAsync(Guid processId, CancellationToken cancellationToken = default)
+    {
+        var exists = await _context.ProcessInstances
+            .AsNoTracking()
+            .AnyAsync(p => p.Id == processId, cancellationToken);
+        if (!exists)
+            return null;
+
+        var entries = await _context.ProcessTimelineEntries
+            .AsNoTracking()
+            .Where(e => e.ProcessInstanceId == processId)
+            .OrderBy(e => e.OccurredAt)
+            .ThenBy(e => e.Sequence)
+            .Select(e => new ProcessTimelineEntryDto(
+                e.Id,
+                e.Sequence,
+                e.EventType.ToString(),
+                e.Description,
+                e.StepId,
+                e.OccurredAt))
+            .ToListAsync(cancellationToken);
+
+        return entries;
+    }
+
     private static ProcessInstanceDto ToDto(ProcessInstance entity)
         => new(
             entity.Id,

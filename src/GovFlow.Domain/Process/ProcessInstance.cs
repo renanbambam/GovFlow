@@ -4,15 +4,10 @@ using GovFlow.Domain.Process.Events;
 
 namespace GovFlow.Domain.Process;
 
-/// <summary>
-/// A running process. Aggregate root for its ordered <see cref="ProcessInstanceStep"/>
-/// collection and the single source of truth for the process state machine: it tracks the
-/// current step, advances through the workflow, and records domain events on every
-/// significant transition.
-/// </summary>
 public sealed class ProcessInstance : AggregateRoot
 {
     private readonly List<ProcessInstanceStep> _steps = new();
+    private readonly List<ProcessTimelineEntry> _timeline = new();
 
     public Guid ProcessTypeId { get; private set; }
 
@@ -24,7 +19,6 @@ public sealed class ProcessInstance : AggregateRoot
 
     public Guid RequesterId { get; private set; }
 
-    /// <summary>Id of the <see cref="ProcessInstanceStep"/> currently in progress, if any.</summary>
     public Guid? CurrentStepId { get; private set; }
 
     public ProcessStatus Status { get; private set; }
@@ -38,6 +32,8 @@ public sealed class ProcessInstance : AggregateRoot
     public DateTime? DueAt { get; private set; }
 
     public IReadOnlyList<ProcessInstanceStep> Steps => _steps.AsReadOnly();
+
+    public IReadOnlyList<ProcessTimelineEntry> Timeline => _timeline.AsReadOnly();
 
     private ProcessInstance(
         Guid processTypeId,
@@ -57,10 +53,6 @@ public sealed class ProcessInstance : AggregateRoot
         OpenedAt = DateTime.UtcNow;
     }
 
-    /// <summary>
-    /// Opens a new instance from a process type, materializing one step per workflow step
-    /// and starting the first one.
-    /// </summary>
     public static ProcessInstance Open(
         ProcessType processType,
         Guid requesterId,
@@ -101,6 +93,9 @@ public sealed class ProcessInstance : AggregateRoot
         instance.CurrentStepId = first.Id;
         instance.Status = ProcessStatus.Open;
 
+        instance.AddTimelineEntry(ProcessEventType.ProcessOpened, $"Process \"{instance.Title}\" was opened.");
+        instance.AddTimelineEntry(ProcessEventType.StepStarted, $"Step {first.Sequence} started.", first.Id);
+
         instance.RaiseDomainEvent(new ProcessInstanceOpenedEvent(instance.Id, instance.ProcessTypeId, requesterId));
         return instance;
     }
@@ -119,15 +114,12 @@ public sealed class ProcessInstance : AggregateRoot
         Touch();
     }
 
-    /// <summary>
-    /// Completes the current step and advances to the next one. When the last step is
-    /// completed the process is resolved.
-    /// </summary>
     public void CompleteCurrentStep(string? notes = null)
     {
         EnsureActive();
         var current = CurrentStepOrThrow();
         current.Complete(notes);
+        AddTimelineEntry(ProcessEventType.StepCompleted, $"Step {current.Sequence} completed.", current.Id);
         RaiseDomainEvent(new ProcessStepCompletedEvent(Id, current.Id));
 
         var next = NextStep(current);
@@ -140,10 +132,10 @@ public sealed class ProcessInstance : AggregateRoot
         next.Start();
         CurrentStepId = next.Id;
         Status = ProcessStatus.InProgress;
+        AddTimelineEntry(ProcessEventType.StepStarted, $"Step {next.Sequence} started.", next.Id);
         Touch();
     }
 
-    /// <summary>Sends the current step back to the previous one for rework.</summary>
     public void ReturnCurrentStep(string? notes = null)
     {
         EnsureActive();
@@ -156,6 +148,8 @@ public sealed class ProcessInstance : AggregateRoot
         previous.Start();
         CurrentStepId = previous.Id;
         Status = ProcessStatus.InProgress;
+        AddTimelineEntry(ProcessEventType.StepReturned, $"Step {current.Sequence} returned to step {previous.Sequence}.", current.Id);
+        AddTimelineEntry(ProcessEventType.StepStarted, $"Step {previous.Sequence} started.", previous.Id);
         RaiseDomainEvent(new ProcessStepReturnedEvent(Id, current.Id));
         Touch();
     }
@@ -166,6 +160,7 @@ public sealed class ProcessInstance : AggregateRoot
             throw new InvalidOperationException("Only an active process can be put on hold.");
 
         Status = ProcessStatus.OnHold;
+        AddTimelineEntry(ProcessEventType.ProcessOnHold, "Process put on hold.");
         Touch();
     }
 
@@ -175,6 +170,7 @@ public sealed class ProcessInstance : AggregateRoot
             throw new InvalidOperationException("Only a process on hold can be resumed.");
 
         Status = ProcessStatus.InProgress;
+        AddTimelineEntry(ProcessEventType.ProcessResumed, "Process resumed.");
         Touch();
     }
 
@@ -184,6 +180,7 @@ public sealed class ProcessInstance : AggregateRoot
         Status = ProcessStatus.Resolved;
         ClosedAt = DateTime.UtcNow;
         CurrentStepId = null;
+        AddTimelineEntry(ProcessEventType.ProcessResolved, "Process resolved.");
         RaiseDomainEvent(new ProcessInstanceResolvedEvent(Id));
         Touch();
     }
@@ -196,6 +193,7 @@ public sealed class ProcessInstance : AggregateRoot
         Status = ProcessStatus.Cancelled;
         ClosedAt = DateTime.UtcNow;
         CurrentStepId = null;
+        AddTimelineEntry(ProcessEventType.ProcessCancelled, "Process cancelled.");
         RaiseDomainEvent(new ProcessInstanceCancelledEvent(Id));
         Touch();
     }
@@ -216,6 +214,32 @@ public sealed class ProcessInstance : AggregateRoot
         DueAt = dueAtUtc;
         Touch();
     }
+
+    public bool RegisterSlaBreach(int idleDays)
+    {
+        if (IsClosed())
+            return false;
+
+        var lastActivitySeq = _timeline
+            .Where(e => e.EventType != ProcessEventType.SlaBreached)
+            .Select(e => (int?)e.Sequence)
+            .Max() ?? 0;
+        var lastBreachSeq = _timeline
+            .Where(e => e.EventType == ProcessEventType.SlaBreached)
+            .Select(e => (int?)e.Sequence)
+            .Max() ?? 0;
+        if (lastBreachSeq > lastActivitySeq)
+            return false;
+
+        AddTimelineEntry(
+            ProcessEventType.SlaBreached,
+            $"SLA breach: no activity for {idleDays} day(s).");
+        Touch();
+        return true;
+    }
+
+    private void AddTimelineEntry(ProcessEventType eventType, string description, Guid? stepId = null)
+        => _timeline.Add(new ProcessTimelineEntry(Id, _timeline.Count + 1, eventType, description, stepId));
 
     private ProcessInstanceStep CurrentStepOrThrow()
         => _steps.FirstOrDefault(s => s.Id == CurrentStepId)

@@ -5,20 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace GovFlow.API.Authentication;
 
-/// <summary>
-/// Wires JWT bearer authentication and the RBAC authorization policies. The validation
-/// pipeline is fully configured so that protecting an endpoint later is a one-attribute
-/// change; no endpoint requires a token yet.
-/// </summary>
 public static class AuthenticationExtensions
 {
     public static IServiceCollection AddGovFlowAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        // JwtSettings is registered as a singleton by the Infrastructure layer; here we only
-        // need the values to configure token validation.
         var settings = configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? new JwtSettings();
 
-        // Guarantee a key of sufficient length even with placeholder configuration.
         var key = Encoding.UTF8.GetBytes(settings.SecretKey.PadRight(32, '0'));
 
         services
@@ -35,6 +27,18 @@ public static class AuthenticationExtensions
                     ValidAudience = settings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ClockSkew = TimeSpan.FromSeconds(30)
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            context.Token = accessToken;
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

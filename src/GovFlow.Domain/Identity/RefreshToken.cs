@@ -2,10 +2,6 @@ using GovFlow.Domain.Common;
 
 namespace GovFlow.Domain.Identity;
 
-/// <summary>
-/// A persisted, revocable refresh token bound to a user. Simple by design: a single active
-/// token chain where refreshing revokes the previous one.
-/// </summary>
 public sealed class RefreshToken : Entity
 {
     public Guid UserId { get; private set; }

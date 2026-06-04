@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GovFlow.Application;
 
-/// <summary>Registers the Application layer: MediatR handlers, validators, and pipeline behaviors.</summary>
 public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)

@@ -4,7 +4,6 @@ using MediatR;
 
 namespace GovFlow.Application.Process.Queries;
 
-/// <summary>Lists process types, optionally filtered by organization.</summary>
 public sealed record GetProcessTypesQuery(Guid? OrganizationId = null) : IRequest<IReadOnlyList<ProcessTypeDto>>;
 
 public sealed class GetProcessTypesQueryHandler

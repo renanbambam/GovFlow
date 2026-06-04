@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
 using GovFlow.API.Authentication;
 using GovFlow.API.Extensions;
+using GovFlow.API.Hubs;
 using GovFlow.API.Middleware;
 using GovFlow.Application;
+using GovFlow.Application.Common.Interfaces;
 using GovFlow.Infrastructure;
 using GovFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -16,12 +18,22 @@ builder.Services
 builder.Services.AddGovFlowSwagger();
 builder.Services.AddGovFlowAuthentication(builder.Configuration);
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IProcessRealtimeNotifier, SignalRProcessNotifier>();
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services
     .AddHealthChecks()
     .AddDbContextCheck<GovFlowDbContext>("database", tags: new[] { "ready" });
+
+var backgroundJobsEnabled = !builder.Environment.IsEnvironment("Testing");
+if (backgroundJobsEnabled)
+    builder.Services.AddGovFlowBackgroundJobs();
 
 var app = builder.Build();
 
@@ -41,13 +53,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ProcessHub>("/hubs/processes");
 
-// Liveness: process is up. Readiness: dependencies (database) reachable.
+if (backgroundJobsEnabled)
+    app.UseGovFlowBackgroundJobs();
+
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 app.MapHealthChecks("/health");
 
 app.Run();
 
-// Exposed so the integration test project can use WebApplicationFactory<Program>.
 public partial class Program;

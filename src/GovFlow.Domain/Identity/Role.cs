@@ -2,10 +2,6 @@ using GovFlow.Domain.Common;
 
 namespace GovFlow.Domain.Identity;
 
-/// <summary>
-/// A named set of permissions, scoped per tenant. Permissions are expressed as opaque
-/// codes (e.g. "process:create") that authorization policies check against.
-/// </summary>
 public sealed class Role : AggregateRoot
 {
     private readonly HashSet<string> _permissionCodes = new(StringComparer.OrdinalIgnoreCase);

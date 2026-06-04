@@ -4,7 +4,6 @@ using MediatR;
 
 namespace GovFlow.Application.Organization.Queries;
 
-/// <summary>Lists all organizations.</summary>
 public sealed record GetOrganizationsQuery : IRequest<IReadOnlyList<OrganizationDto>>;
 
 public sealed class GetOrganizationsQueryHandler

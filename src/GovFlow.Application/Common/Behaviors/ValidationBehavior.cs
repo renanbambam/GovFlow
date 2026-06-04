@@ -3,11 +3,6 @@ using MediatR;
 
 namespace GovFlow.Application.Common.Behaviors;
 
-/// <summary>
-/// MediatR pipeline behavior that runs every registered FluentValidation validator for the
-/// incoming request before the handler executes. If any rule fails it throws a single
-/// <see cref="ValidationException"/> aggregating all failures, which the API maps to 400.
-/// </summary>
 public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {

@@ -25,13 +25,15 @@ public class ProcessCommandHandlerTests
         var processType = BuildType();
         typeRepo.Items[processType.Id] = processType;
 
-        var handler = new OpenProcessInstanceCommandHandler(typeRepo, instanceRepo, new FakeUnitOfWork());
+        var notifier = new FakeProcessRealtimeNotifier();
+        var handler = new OpenProcessInstanceCommandHandler(typeRepo, instanceRepo, notifier, new FakeUnitOfWork());
 
         var id = await handler.Handle(
             new OpenProcessInstanceCommand(processType.Id, Guid.NewGuid(), "Title", "Desc", ProcessPriority.High),
             CancellationToken.None);
 
         Assert.True(instanceRepo.Items.ContainsKey(id));
+        Assert.Contains(notifier.Notifications, n => n.ProcessId == id && n.Status == "Open");
     }
 
     [Fact]
@@ -40,6 +42,7 @@ public class ProcessCommandHandlerTests
         var handler = new OpenProcessInstanceCommandHandler(
             new FakeProcessTypeRepository(),
             new FakeProcessInstanceRepository(),
+            new FakeProcessRealtimeNotifier(),
             new FakeUnitOfWork());
 
         await Assert.ThrowsAsync<NotFoundException>(
@@ -55,17 +58,20 @@ public class ProcessCommandHandlerTests
         var instance = ProcessInstance.Open(BuildType(), Guid.NewGuid(), "t", "d");
         instanceRepo.Items[instance.Id] = instance;
 
-        var handler = new CompleteProcessStepCommandHandler(instanceRepo, new FakeUnitOfWork());
+        var notifier = new FakeProcessRealtimeNotifier();
+        var handler = new CompleteProcessStepCommandHandler(instanceRepo, notifier, new FakeUnitOfWork());
 
         await handler.Handle(new CompleteProcessStepCommand(instance.Id, "ok"), CancellationToken.None);
 
         Assert.Equal(ProcessStatus.Resolved, instance.Status);
+        Assert.Contains(notifier.Notifications, n => n.ProcessId == instance.Id && n.Status == "Resolved");
     }
 
     [Fact]
     public async Task Complete_step_with_unknown_instance_throws_not_found()
     {
-        var handler = new CompleteProcessStepCommandHandler(new FakeProcessInstanceRepository(), new FakeUnitOfWork());
+        var handler = new CompleteProcessStepCommandHandler(
+            new FakeProcessInstanceRepository(), new FakeProcessRealtimeNotifier(), new FakeUnitOfWork());
 
         await Assert.ThrowsAsync<NotFoundException>(
             () => handler.Handle(new CompleteProcessStepCommand(Guid.NewGuid()), CancellationToken.None));

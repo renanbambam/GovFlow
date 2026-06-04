@@ -20,7 +20,6 @@ internal sealed class WorkflowStepConfiguration : IEntityTypeConfiguration<Workf
         builder.Property(x => x.AssignableDepartmentId);
         builder.Property(x => x.SlaHours);
 
-        // Required document names persisted as JSON via the private backing field.
         builder.Ignore(x => x.RequiredDocuments);
         builder.Property<List<string>>("_requiredDocuments")
             .HasColumnName("required_documents")

@@ -1,6 +1,5 @@
 namespace GovFlow.Domain.Process.Enums;
 
-/// <summary>Lifecycle state of a <see cref="ProcessInstance"/>.</summary>
 public enum ProcessStatus
 {
     Draft = 0,

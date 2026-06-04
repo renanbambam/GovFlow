@@ -4,7 +4,6 @@ using MediatR;
 
 namespace GovFlow.Application.Dashboard.Queries;
 
-/// <summary>Returns the executive dashboard counters.</summary>
 public sealed record GetDashboardQuery : IRequest<DashboardDto>;
 
 public sealed class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, DashboardDto>

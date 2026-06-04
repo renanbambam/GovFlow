@@ -2,12 +2,6 @@ using GovFlow.Domain.Common;
 
 namespace GovFlow.Domain.Process;
 
-/// <summary>
-/// A configurable process template owned by an organization. It is the aggregate root for
-/// its ordered <see cref="WorkflowStep"/> collection: steps are only ever added, removed,
-/// or reordered through this type, which keeps their <see cref="WorkflowStep.Order"/>
-/// contiguous and 1-based.
-/// </summary>
 public sealed class ProcessType : AggregateRoot
 {
     private readonly List<WorkflowStep> _steps = new();

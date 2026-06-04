@@ -2,10 +2,6 @@ using GovFlow.Domain.Common;
 
 namespace GovFlow.Domain.Organization;
 
-/// <summary>
-/// An organizational unit. Departments form a tree via <see cref="ParentDepartmentId"/>
-/// and may have a manager. Scoped to a single organization.
-/// </summary>
 public sealed class Department : AggregateRoot
 {
     public string Name { get; private set; }

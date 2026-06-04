@@ -1,4 +1,5 @@
 using GovFlow.Application.Common.Exceptions;
+using GovFlow.Application.Common.Interfaces;
 using GovFlow.Domain.Common;
 using GovFlow.Domain.Process;
 using MediatR;
@@ -9,15 +10,18 @@ public sealed class OpenProcessInstanceCommandHandler : IRequestHandler<OpenProc
 {
     private readonly IProcessTypeRepository _processTypes;
     private readonly IProcessInstanceRepository _instances;
+    private readonly IProcessRealtimeNotifier _notifier;
     private readonly IUnitOfWork _unitOfWork;
 
     public OpenProcessInstanceCommandHandler(
         IProcessTypeRepository processTypes,
         IProcessInstanceRepository instances,
+        IProcessRealtimeNotifier notifier,
         IUnitOfWork unitOfWork)
     {
         _processTypes = processTypes;
         _instances = instances;
+        _notifier = notifier;
         _unitOfWork = unitOfWork;
     }
 
@@ -35,6 +39,8 @@ public sealed class OpenProcessInstanceCommandHandler : IRequestHandler<OpenProc
 
         await _instances.AddAsync(instance, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _notifier.ProcessStatusChangedAsync(instance.Id, instance.Status.ToString(), cancellationToken);
 
         return instance.Id;
     }

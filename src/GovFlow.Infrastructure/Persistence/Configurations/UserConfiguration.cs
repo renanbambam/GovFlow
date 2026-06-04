@@ -23,8 +23,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.CreatedAt).IsRequired().HasColumnType("timestamp with time zone");
         builder.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone");
 
-        // Role assignments are held by id in a private backing field, persisted as JSON so the
-        // mapping is portable across providers.
         builder.Ignore(x => x.RoleIds);
         builder.Property<List<Guid>>("_roleIds")
             .HasColumnName("role_ids")
@@ -36,7 +34,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
                     value => value.Aggregate(0, (hash, id) => HashCode.Combine(hash, id.GetHashCode())),
                     value => value.ToList()));
 
-        // Role names (Admin/Manager/Analyst) used for authorization, persisted as JSON.
         builder.Ignore(x => x.Roles);
         builder.Property<HashSet<string>>("_roles")
             .HasColumnName("roles")

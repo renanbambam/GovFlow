@@ -5,7 +5,6 @@ using MediatR;
 
 namespace GovFlow.Application.Organization.Queries;
 
-/// <summary>Gets a single organization by id.</summary>
 public sealed record GetOrganizationByIdQuery(Guid Id) : IRequest<OrganizationDto>;
 
 public sealed class GetOrganizationByIdQueryHandler : IRequestHandler<GetOrganizationByIdQuery, OrganizationDto>

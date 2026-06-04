@@ -3,19 +3,12 @@ using GovFlow.Domain.Process.Enums;
 
 namespace GovFlow.Domain.Process;
 
-/// <summary>
-/// A materialized step of a running <see cref="ProcessInstance"/>, snapshotted from the
-/// corresponding <see cref="WorkflowStep"/> when the process is opened. Part of the
-/// ProcessInstance aggregate, so its transitions are driven by the parent.
-/// </summary>
 public sealed class ProcessInstanceStep : Entity
 {
     public Guid ProcessInstanceId { get; private set; }
 
     public Guid WorkflowStepId { get; private set; }
 
-    /// <summary>1-based position in the workflow, mirrored from the originating step so the
-    /// running order survives reloads from persistence.</summary>
     public int Sequence { get; private set; }
 
     public Guid? AssignedUserId { get; private set; }

@@ -1,6 +1,5 @@
 namespace GovFlow.Application.Identity.Dtos;
 
-/// <summary>Authentication result returned by register/login/refresh.</summary>
 public sealed record AuthResponse(
     string AccessToken,
     string RefreshToken,

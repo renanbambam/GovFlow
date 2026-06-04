@@ -1,7 +1,33 @@
+using GovFlow.Application.Common.Interfaces;
 using GovFlow.Application.Common.Security;
 using GovFlow.Domain.Identity;
 
 namespace GovFlow.Application.Tests.Fakes;
+
+internal sealed class FakeCurrentUserService : ICurrentUserService
+{
+    public FakeCurrentUserService(Guid? userId = null) => UserId = userId;
+
+    public Guid? UserId { get; set; }
+
+    public string? Email { get; set; } = "tester@govflow.local";
+
+    public bool IsAuthenticated => UserId is not null;
+}
+
+internal sealed class FakeFileStorageService : IFileStorageService
+{
+    public List<(string Folder, string FileName, long Size)> Saved { get; } = new();
+
+    public async Task<StoredFile> SaveAsync(string folder, string fileName, Stream content, CancellationToken cancellationToken = default)
+    {
+        using var ms = new MemoryStream();
+        await content.CopyToAsync(ms, cancellationToken);
+        var size = ms.Length;
+        Saved.Add((folder, fileName, size));
+        return new StoredFile($"{folder}/{Guid.NewGuid():N}{Path.GetExtension(fileName)}", size);
+    }
+}
 
 internal sealed class FakeUserRepository : IUserRepository
 {

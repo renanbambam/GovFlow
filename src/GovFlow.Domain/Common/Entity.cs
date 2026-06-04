@@ -1,9 +1,5 @@
 namespace GovFlow.Domain.Common;
 
-/// <summary>
-/// Base type for every domain entity. Identity is defined solely by <see cref="Id"/>,
-/// so two instances of the same type with the same id are considered equal.
-/// </summary>
 public abstract class Entity : IEquatable<Entity>
 {
     public Guid Id { get; protected init; }

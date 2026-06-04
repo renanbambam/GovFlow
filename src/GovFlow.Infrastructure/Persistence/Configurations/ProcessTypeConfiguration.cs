@@ -20,7 +20,6 @@ internal sealed class ProcessTypeConfiguration : IEntityTypeConfiguration<Proces
         builder.Property(x => x.CreatedAt).IsRequired().HasColumnType("timestamp with time zone");
         builder.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone");
 
-        // The ordered steps collection is exposed read-only and backed by the _steps field.
         builder.HasMany(x => x.Steps)
             .WithOne()
             .HasForeignKey(s => s.ProcessTypeId)

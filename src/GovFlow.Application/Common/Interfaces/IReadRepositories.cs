@@ -4,10 +4,6 @@ using GovFlow.Application.Process.Dtos;
 
 namespace GovFlow.Application.Common.Interfaces;
 
-/// <summary>
-/// Read-side contracts (CQRS query side). Implementations live in Infrastructure and project
-/// straight to DTOs with EF Core, never exposing domain entities to the Application handlers.
-/// </summary>
 public interface IOrganizationReadRepository
 {
     Task<OrganizationDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
@@ -27,6 +23,18 @@ public interface IProcessReadRepository
     Task<ProcessInstanceDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ProcessSummaryDto>> ListAsync(Guid? organizationId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<ProcessTimelineEntryDto>?> GetTimelineAsync(Guid processId, CancellationToken cancellationToken = default);
+}
+
+public interface IProcessCommentReadRepository
+{
+    Task<IReadOnlyList<ProcessCommentDto>?> ListByProcessAsync(Guid processId, CancellationToken cancellationToken = default);
+}
+
+public interface IProcessDocumentReadRepository
+{
+    Task<IReadOnlyList<ProcessDocumentDto>?> ListByProcessAsync(Guid processId, CancellationToken cancellationToken = default);
 }
 
 public interface IDashboardReadRepository

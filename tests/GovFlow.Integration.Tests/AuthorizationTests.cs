@@ -36,7 +36,6 @@ public class AuthorizationTests : IClassFixture<GovFlowApiFactory>
     {
         var client = _factory.CreateAuthenticatedClient("Manager");
 
-        // Authorized (Manager) but the organization does not exist -> 404, not 403.
         var response = await client.PostAsJsonAsync("/api/v1/process-types", new
         {
             name = "Type",

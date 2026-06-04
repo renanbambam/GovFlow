@@ -211,6 +211,71 @@ namespace GovFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("organizations", (string)null);
                 });
 
+            modelBuilder.Entity("GovFlow.Domain.Process.ProcessComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProcessInstanceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessInstanceId");
+
+                    b.ToTable("process_comments", (string)null);
+                });
+
+            modelBuilder.Entity("GovFlow.Domain.Process.ProcessDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("ProcessInstanceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UploadedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessInstanceId");
+
+                    b.ToTable("process_documents", (string)null);
+                });
+
             modelBuilder.Entity("GovFlow.Domain.Process.ProcessInstance", b =>
                 {
                     b.Property<Guid>("Id")
@@ -318,6 +383,40 @@ namespace GovFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("process_instance_steps", (string)null);
                 });
 
+            modelBuilder.Entity("GovFlow.Domain.Process.ProcessTimelineEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProcessInstanceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("StepId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessInstanceId", "Sequence");
+
+                    b.ToTable("process_timeline_entries", (string)null);
+                });
+
             modelBuilder.Entity("GovFlow.Domain.Process.ProcessType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -402,6 +501,15 @@ namespace GovFlow.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GovFlow.Domain.Process.ProcessTimelineEntry", b =>
+                {
+                    b.HasOne("GovFlow.Domain.Process.ProcessInstance", null)
+                        .WithMany("Timeline")
+                        .HasForeignKey("ProcessInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("GovFlow.Domain.Process.WorkflowStep", b =>
                 {
                     b.HasOne("GovFlow.Domain.Process.ProcessType", null)
@@ -414,6 +522,8 @@ namespace GovFlow.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("GovFlow.Domain.Process.ProcessInstance", b =>
                 {
                     b.Navigation("Steps");
+
+                    b.Navigation("Timeline");
                 });
 
             modelBuilder.Entity("GovFlow.Domain.Process.ProcessType", b =>

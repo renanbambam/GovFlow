@@ -19,8 +19,6 @@ internal sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.Property(x => x.CreatedAt).IsRequired().HasColumnType("timestamp with time zone");
         builder.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone");
 
-        // Permission codes are a case-insensitive set in a private backing field, persisted as
-        // JSON. A value comparer lets EF detect set changes correctly.
         builder.Ignore(x => x.PermissionCodes);
         builder.Property<HashSet<string>>("_permissionCodes")
             .HasColumnName("permission_codes")

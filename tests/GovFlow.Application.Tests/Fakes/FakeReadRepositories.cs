@@ -41,6 +41,13 @@ internal sealed class FakeProcessReadRepository : IProcessReadRepository
                 .Where(p => organizationId == null || p.OrganizationId == organizationId)
                 .Select(p => new ProcessSummaryDto(p.Id, p.ProcessTypeId, p.OrganizationId, p.Title, p.Status, p.Priority, p.OpenedAt, p.ClosedAt))
                 .ToList());
+
+    public Dictionary<Guid, List<ProcessTimelineEntryDto>> Timelines { get; } = new();
+
+    public Task<IReadOnlyList<ProcessTimelineEntryDto>?> GetTimelineAsync(Guid processId, CancellationToken cancellationToken = default)
+        => Task.FromResult(Timelines.TryGetValue(processId, out var entries)
+            ? (IReadOnlyList<ProcessTimelineEntryDto>?)entries
+            : null);
 }
 
 internal sealed class FakeDashboardReadRepository : IDashboardReadRepository

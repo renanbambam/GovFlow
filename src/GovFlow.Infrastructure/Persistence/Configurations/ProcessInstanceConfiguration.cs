@@ -44,6 +44,14 @@ internal sealed class ProcessInstanceConfiguration : IEntityTypeConfiguration<Pr
         builder.Metadata.FindNavigation(nameof(ProcessInstance.Steps))!
             .SetPropertyAccessMode(PropertyAccessMode.Field);
 
+        builder.HasMany(x => x.Timeline)
+            .WithOne()
+            .HasForeignKey(e => e.ProcessInstanceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Metadata.FindNavigation(nameof(ProcessInstance.Timeline))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
         builder.HasIndex(x => x.OrganizationId);
         builder.HasIndex(x => x.ProcessTypeId);
         builder.HasIndex(x => x.Status);

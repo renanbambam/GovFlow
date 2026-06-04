@@ -1,6 +1,5 @@
 namespace GovFlow.Application.Process.Dtos;
 
-/// <summary>Lightweight read model used in process listings.</summary>
 public sealed record ProcessSummaryDto(
     Guid Id,
     Guid ProcessTypeId,
@@ -11,7 +10,6 @@ public sealed record ProcessSummaryDto(
     DateTime OpenedAt,
     DateTime? ClosedAt);
 
-/// <summary>Full read model for a single process instance, including its steps.</summary>
 public sealed record ProcessInstanceDto(
     Guid Id,
     Guid ProcessTypeId,
@@ -27,7 +25,6 @@ public sealed record ProcessInstanceDto(
     DateTime? DueAt,
     IReadOnlyList<ProcessInstanceStepDto> Steps);
 
-/// <summary>Read model for a single step of a running process.</summary>
 public sealed record ProcessInstanceStepDto(
     Guid Id,
     Guid WorkflowStepId,

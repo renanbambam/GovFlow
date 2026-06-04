@@ -1,6 +1,5 @@
 namespace GovFlow.Domain.Process.Enums;
 
-/// <summary>State of a single <see cref="ProcessInstanceStep"/> within a running process.</summary>
 public enum StepStatus
 {
     Pending = 0,

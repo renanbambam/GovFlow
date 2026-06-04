@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace GovFlow.Infrastructure.Identity;
 
-/// <summary>Issues HS256-signed JWT access tokens plus random refresh tokens.</summary>
 internal sealed class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtSettings _settings;

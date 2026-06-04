@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GovFlow.API.Controllers;
 
-/// <summary>Manages process templates and their workflow steps.</summary>
 [ApiController]
 [Route("api/v1/process-types")]
 [Produces("application/json")]
@@ -20,7 +19,6 @@ public sealed class ProcessTypesController : ControllerBase
 
     public ProcessTypesController(ISender sender) => _sender = sender;
 
-    /// <summary>Lists process types, optionally filtered by organization.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<ProcessTypeDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<ProcessTypeDto>>> List(
@@ -28,14 +26,12 @@ public sealed class ProcessTypesController : ControllerBase
         CancellationToken cancellationToken)
         => Ok(await _sender.Send(new GetProcessTypesQuery(organizationId), cancellationToken));
 
-    /// <summary>Gets a single process type (with steps) by id.</summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ProcessTypeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProcessTypeDto>> GetById(Guid id, CancellationToken cancellationToken)
         => Ok(await _sender.Send(new GetProcessTypeByIdQuery(id), cancellationToken));
 
-    /// <summary>Creates a process type together with its ordered workflow steps. Requires the Manager role.</summary>
     [HttpPost]
     [Authorize(Policy = GovFlowPolicies.RequireManager)]
     [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status201Created)]

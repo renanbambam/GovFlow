@@ -3,6 +3,8 @@ using GovFlow.Application.Dashboard.Dtos;
 using GovFlow.Application.Dashboard.Queries;
 using GovFlow.Application.Organization.Dtos;
 using GovFlow.Application.Organization.Queries;
+using GovFlow.Application.Process.Dtos;
+using GovFlow.Application.Process.Queries;
 using GovFlow.Application.Tests.Fakes;
 using Xunit;
 
@@ -55,5 +57,30 @@ public class QueryHandlerTests
 
         Assert.Equal(9, result.TotalProcesses);
         Assert.Equal(4, result.TotalOpenProcesses);
+    }
+
+    [Fact]
+    public async Task GetProcessTimeline_returns_entries_when_process_exists()
+    {
+        var repo = new FakeProcessReadRepository();
+        var id = Guid.NewGuid();
+        repo.Timelines[id] = new List<ProcessTimelineEntryDto>
+        {
+            new(Guid.NewGuid(), 1, "ProcessOpened", "opened", null, DateTime.UtcNow)
+        };
+        var handler = new GetProcessTimelineQueryHandler(repo);
+
+        var result = await handler.Handle(new GetProcessTimelineQuery(id), CancellationToken.None);
+
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetProcessTimeline_throws_not_found_when_process_missing()
+    {
+        var handler = new GetProcessTimelineQueryHandler(new FakeProcessReadRepository());
+
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => handler.Handle(new GetProcessTimelineQuery(Guid.NewGuid()), CancellationToken.None));
     }
 }

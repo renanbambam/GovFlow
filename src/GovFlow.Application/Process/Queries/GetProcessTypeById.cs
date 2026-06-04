@@ -5,7 +5,6 @@ using MediatR;
 
 namespace GovFlow.Application.Process.Queries;
 
-/// <summary>Gets a single process type (with its steps) by id.</summary>
 public sealed record GetProcessTypeByIdQuery(Guid Id) : IRequest<ProcessTypeDto>;
 
 public sealed class GetProcessTypeByIdQueryHandler : IRequestHandler<GetProcessTypeByIdQuery, ProcessTypeDto>
