@@ -148,6 +148,22 @@ Role policies are hierarchical: Manager satisfies Analyst-level endpoints, and A
 
 ---
 
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language / runtime | C# 12 · .NET 8 |
+| Web | ASP.NET Core 8 |
+| Persistence | Entity Framework Core 8 · Npgsql · PostgreSQL 16 |
+| Application | MediatR (CQRS) · FluentValidation |
+| Auth | JWT (HS256) access + refresh tokens · BCrypt |
+| Real-time | SignalR |
+| Background jobs | Hangfire |
+| Docs / tests | Swagger (Swashbuckle) · xUnit |
+| Local environment | Docker Compose (PostgreSQL) |
+
+---
+
 ## Running locally
 
 **Prerequisites:** .NET 8 SDK and Docker.
@@ -217,3 +233,14 @@ an isolated database per test run, so no external infrastructure is required to 
 **Hangfire dashboard — recurring SLA monitoring job**
 
 ![Hangfire dashboard](docs/images/hangfire-dashboard.png)
+
+---
+
+## Future Improvements
+
+- External notifications (email / webhooks) on SLA breach and step assignment.
+- Step assignment and return-to-previous-step endpoints, plus a notification center.
+- Document download and a cloud storage backend (S3 / Azure Blob) behind the existing storage abstraction.
+- Per-process-type SLA policies instead of a single global idle window.
+- Multi-tenant query filtering scoped to the caller's organization claim.
+- Persistent Hangfire storage and dashboard authentication for production.
