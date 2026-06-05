@@ -1,0 +1,25 @@
+# GitHub repository metadata (the "About" panel).
+# This file documents and version-controls the values configured on GitHub.
+# GitHub does not read this file automatically; it is the canonical source of
+# truth for the repository description and topics applied via the GitHub API.
+
+description: >-
+  Workflow and process-management platform for organizations — .NET 8,
+  ASP.NET Core, PostgreSQL, Clean Architecture, CQRS, JWT/RBAC, SignalR.
+
+topics:
+  - dotnet
+  - aspnet-core
+  - csharp
+  - clean-architecture
+  - ddd
+  - cqrs
+  - mediatr
+  - postgresql
+  - entity-framework-core
+  - jwt
+  - rbac
+  - signalr
+  - hangfire
+  - rest-api
+  - workflow-engine
